@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import katex from 'katex'
 import { CHAPTERS, KEYPAD } from './chapters.js'
+import { compute } from './engine/index.js'
 import './App.css'
 
 function Tex({ expr, display = false }) {
@@ -79,21 +80,38 @@ function Contents({ active, onSelect }) {
   )
 }
 
-function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
-  const exprRef = useRef(null)
+const FUNCTION_KEYS = ['sin', 'cos', 'tan', 'ln', 'log', '√']
 
-  const press = (key) => {
-    const el = exprRef.current
-    const cur = values.expr ?? ''
-    let next
-    if (key === '⌫') next = cur.slice(0, -1)
-    else if (['sin', 'cos', 'tan', 'ln', 'log', '√'].includes(key)) next = cur + key + '('
-    else next = cur + key
-    setValues({ ...values, expr: next })
-    el?.focus()
-  }
+function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
+  const inputs = useRef({})
+  const [focused, setFocused] = useState('expr')
 
   const visibleFields = chapter.fields.filter((f) => !f.onlyFor || f.onlyFor === mode)
+
+  // Keys write into whichever line of the slate was last touched, at the caret.
+  const press = (key) => {
+    const target = visibleFields.some((f) => f.key === focused) ? focused : 'expr'
+    const el = inputs.current[target]
+    const cur = values[target] ?? ''
+    const start = el?.selectionStart ?? cur.length
+    const end = el?.selectionEnd ?? cur.length
+    let next
+    let caret
+    if (key === '⌫') {
+      const from = start === end ? Math.max(0, start - 1) : start
+      next = cur.slice(0, from) + cur.slice(end)
+      caret = from
+    } else {
+      const text = FUNCTION_KEYS.includes(key) ? `${key}(` : key
+      next = cur.slice(0, start) + text + cur.slice(end)
+      caret = start + text.length
+    }
+    setValues({ ...values, [target]: next })
+    requestAnimationFrame(() => {
+      el?.focus()
+      el?.setSelectionRange(caret, caret)
+    })
+  }
 
   return (
     <section className="page page-left">
@@ -108,7 +126,7 @@ function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
       </h2>
 
       <p className="chapter-blurb">
-        <span className="drop-cap">{chapter.initial}</span>
+        <span className="drop-cap">{chapter.blurb[0]}</span>
         {chapter.blurb.slice(1)}
       </p>
 
@@ -136,16 +154,18 @@ function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
         }}
       >
         <div className="fields">
-          {visibleFields.map((f, i) => (
+          {visibleFields.map((f) => (
             <label key={f.key} className={f.short ? 'field short' : 'field'}>
               <span className="field-label">{f.label}</span>
               <input
-                ref={i === 0 ? exprRef : undefined}
+                ref={(el) => (inputs.current[f.key] = el)}
                 value={values[f.key] ?? ''}
                 placeholder={f.placeholder}
+                onFocus={() => setFocused(f.key)}
                 onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
                 spellCheck="false"
                 autoComplete="off"
+                autoCapitalize="off"
               />
             </label>
           ))}
@@ -153,17 +173,26 @@ function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
 
         <div className="tablet" aria-label="Reckoning tablet">
           {KEYPAD.flat().map((k) => (
-            <button type="button" key={k} className="key" onClick={() => press(k)}>
+            <button
+              type="button"
+              key={k}
+              className="key"
+              onMouseDown={(e) => e.preventDefault() /* keep the caret in the field */}
+              onClick={() => press(k)}
+              aria-label={k === '⌫' ? 'Erase one character' : k === '^' ? 'Power' : undefined}
+            >
               {k === '^' ? 'xⁿ' : k}
             </button>
           ))}
         </div>
 
+        <p className="hint">{chapter.hint}</p>
+
         <div className="seal-row">
           <button type="button" className="clear-link" onClick={() => setValues({})}>
             Erase the slate
           </button>
-          <button type="submit" className="seal" aria-label="Compute">
+          <button type="submit" className="seal" aria-label="Compute" title="Compute (Enter)">
             <span>Q.E.F.</span>
           </button>
         </div>
@@ -174,8 +203,7 @@ function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
   )
 }
 
-function ResultPage({ chapter, shown }) {
-  const s = chapter.sample
+function ResultPage({ chapter, outcome }) {
   return (
     <section className="page page-right" aria-live="polite">
       <div className="page-head">
@@ -185,7 +213,7 @@ function ResultPage({ chapter, shown }) {
 
       <MarginFigure />
 
-      {!shown ? (
+      {!outcome ? (
         <div className="awaiting">
           <p className="awaiting-text">
             Inscribe thy quantity upon the facing leaf, and press the seal, that the
@@ -193,32 +221,55 @@ function ResultPage({ chapter, shown }) {
           </p>
           <Fleuron />
         </div>
+      ) : outcome.error ? (
+        <article className="demonstration erratum">
+          <h3 className="prop-heading">Erratum</h3>
+          <p className="erratum-text">{outcome.error}</p>
+          <p className="erratum-hint">
+            Example: <code>{chapter.example.expr}</code>
+          </p>
+        </article>
       ) : (
         <article className="demonstration">
           <h3 className="prop-heading">Proposition. Given</h3>
           <div className="given">
-            <Tex expr={s.given} display />
+            <Tex expr={outcome.given} display />
           </div>
 
-          <h3 className="prop-heading">Demonstration</h3>
-          <ol className="steps">
-            {s.steps.map((st, i) => (
-              <li key={i}>
-                <span className="step-note">{st.note},</span>
-                <Tex expr={st.tex} display />
-              </li>
-            ))}
-          </ol>
+          {outcome.steps.length > 0 && (
+            <>
+              <h3 className="prop-heading">Demonstration</h3>
+              <ol className="steps">
+                {outcome.steps.map((st, i) => (
+                  <li key={i}>
+                    <span className="step-note">
+                      {st.note}
+                      {st.sub ? (
+                        <>
+                          {' '}
+                          <span className="nowrap">
+                            <Tex expr={st.sub} />
+                            {st.tex ? ',' : '.'}
+                          </span>
+                        </>
+                      ) : st.tex ? (
+                        ','
+                      ) : (
+                        '.'
+                      )}
+                    </span>
+                    {st.tex && <Tex expr={st.tex} display />}
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
 
           <h3 className="prop-heading">Therefore</h3>
           <div className="result-box">
-            <Tex expr={s.result} display />
+            <Tex expr={outcome.result} display />
           </div>
           <p className="qed">Which was to be found.</p>
-          <p className="design-note">
-            ✠ A specimen plate — the true engine of reckoning shall be fitted in the next
-            stage.
-          </p>
         </article>
       )}
 
@@ -227,19 +278,33 @@ function ResultPage({ chapter, shown }) {
   )
 }
 
+const firstMode = (c) => c.actions?.[0]
+
 export default function App() {
   const [active, setActive] = useState(CHAPTERS[0].id)
   const chapter = CHAPTERS.find((c) => c.id === active)
-  const [values, setValues] = useState({})
-  const [mode, setMode] = useState(chapter.actions?.[0])
-  const [shown, setShown] = useState(true)
+  const [values, setValues] = useState(chapter.example)
+  const [mode, setModeState] = useState(firstMode(chapter))
+  const [outcome, setOutcome] = useState(() => compute(chapter.id, chapter.example, firstMode(chapter)))
 
   const select = (id) => {
     const c = CHAPTERS.find((x) => x.id === id)
     setActive(id)
-    setValues({})
-    setMode(c.actions?.[0])
-    setShown(true)
+    setValues(c.example)
+    setModeState(firstMode(c))
+    setOutcome(compute(c.id, c.example, firstMode(c)))
+  }
+
+  const setMode = (m) => {
+    // If the slate still holds another mode's example, show this mode's own example.
+    const examples = chapter.modeExamples
+    let next = values
+    if (examples && Object.values(examples).includes(values.expr) && examples[m]) {
+      next = { ...values, expr: examples[m] }
+      setValues(next)
+    }
+    setModeState(m)
+    setOutcome(compute(chapter.id, next, m))
   }
 
   return (
@@ -253,10 +318,10 @@ export default function App() {
           setValues={setValues}
           mode={mode}
           setMode={setMode}
-          onCompute={() => setShown(true)}
+          onCompute={() => setOutcome(compute(chapter.id, values, mode))}
         />
         <div className="spine" aria-hidden="true" />
-        <ResultPage chapter={chapter} shown={shown} />
+        <ResultPage chapter={chapter} outcome={outcome} />
       </main>
       <footer className="colophon">
         <Fleuron />

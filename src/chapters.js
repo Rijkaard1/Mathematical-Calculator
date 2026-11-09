@@ -1,6 +1,6 @@
 // Each chapter of the "treatise" is one calculator mode.
-// `sample` is a demonstration plate shown during the design stage;
-// the real computation engine replaces it in the next stage.
+// `example` fills the slate when the chapter is opened, so the reader
+// sees a worked demonstration straight away.
 
 export const CHAPTERS = [
   {
@@ -10,17 +10,10 @@ export const CHAPTERS = [
     title: 'Of Arithmetick',
     blurb:
       'Wherein the four operations of number, together with powers, roots and the factorial, are set forth and reckoned.',
-    initial: 'A',
+    initial: 'W',
     fields: [{ key: 'expr', label: 'Expression to be reckoned', placeholder: '(3 + 4) × 12 ÷ 7' }],
-    sample: {
-      given: '\\dfrac{(3+4)\\times 12}{7}',
-      steps: [
-        { note: 'First, that within the parentheses', tex: '3 + 4 = 7' },
-        { note: 'Then the multiplication', tex: '7 \\times 12 = 84' },
-        { note: 'Lastly the division', tex: '84 \\div 7 = 12' },
-      ],
-      result: '12',
-    },
+    example: { expr: '(3 + 4) × 12 ÷ 7' },
+    hint: 'Angles are in radians. log is to base 10, ln is natural.',
   },
   {
     id: 'algebra',
@@ -30,19 +23,19 @@ export const CHAPTERS = [
     blurb:
       'Concerning the simplifying, expanding and factoring of expressions, and the solving of equations for the unknown quantity.',
     initial: 'C',
-    actions: ['Simplify', 'Expand', 'Factor', 'Solve'],
+    actions: ['Solve', 'Simplify', 'Expand', 'Factor'],
     fields: [
       { key: 'expr', label: 'Expression or equation', placeholder: 'x^2 - 5x + 6 = 0' },
-      { key: 'var', label: 'Unknown', placeholder: 'x', short: true },
+      { key: 'var', label: 'Unknown', placeholder: 'x', short: true, onlyFor: 'Solve' },
     ],
-    sample: {
-      given: 'x^2 - 5x + 6 = 0',
-      steps: [
-        { note: 'The polynomial is resolved into factors', tex: '(x-2)(x-3) = 0' },
-        { note: 'Each factor being set equal to nothing', tex: 'x - 2 = 0 \\quad\\text{or}\\quad x - 3 = 0' },
-      ],
-      result: 'x = 2,\\; x = 3',
+    example: { expr: 'x^2 - 5x + 6 = 0', var: 'x' },
+    modeExamples: {
+      Solve: 'x^2 - 5x + 6 = 0',
+      Simplify: '(x^2 - 1) / (x - 1)',
+      Expand: '(x + 1)^3',
+      Factor: 'x^4 - 1',
     },
+    hint: 'Write 2x or 2*x alike; ^ raiseth to a power.',
   },
   {
     id: 'derivative',
@@ -51,20 +44,14 @@ export const CHAPTERS = [
     title: 'Of Differentiation',
     blurb:
       'Of the method of fluxions: how the rate of change of a quantity may be found at every point of its course.',
-    initial: 'T',
+    initial: 'O',
     fields: [
       { key: 'expr', label: 'Function f(x)', placeholder: 'x^2 · sin(x)' },
       { key: 'var', label: 'With respect to', placeholder: 'x', short: true },
       { key: 'order', label: 'Order', placeholder: '1', short: true },
     ],
-    sample: {
-      given: '\\dfrac{d}{dx}\\left[x^2 \\sin x\\right]',
-      steps: [
-        { note: 'By the rule of the product', tex: "(uv)' = u'v + uv'" },
-        { note: 'Whence', tex: '2x\\sin x + x^2 \\cos x' },
-      ],
-      result: '2x\\sin x + x^2\\cos x',
-    },
+    example: { expr: 'x^2 · sin(x)', var: 'x', order: '1' },
+    hint: 'The order may be 1 to 10; 2 giveth the second fluxion.',
   },
   {
     id: 'integral',
@@ -73,7 +60,7 @@ export const CHAPTERS = [
     title: 'Of Integration',
     blurb:
       'Of quadratures, being the inverse of fluxions: the finding of areas beneath curves and of antiderivatives.',
-    initial: 'Q',
+    initial: 'O',
     actions: ['Indefinite', 'Definite'],
     fields: [
       { key: 'expr', label: 'Integrand f(x)', placeholder: 'x · e^x' },
@@ -81,14 +68,8 @@ export const CHAPTERS = [
       { key: 'lower', label: 'Lower bound', placeholder: '0', short: true, onlyFor: 'Definite' },
       { key: 'upper', label: 'Upper bound', placeholder: '1', short: true, onlyFor: 'Definite' },
     ],
-    sample: {
-      given: '\\int x\\,e^{x}\\,dx',
-      steps: [
-        { note: 'By integration in parts, taking u = x, dv = eˣ dx', tex: '\\int u\\,dv = uv - \\int v\\,du' },
-        { note: 'Whence', tex: 'x e^{x} - \\int e^{x}\\,dx' },
-      ],
-      result: '(x - 1)\\,e^{x} + C',
-    },
+    example: { expr: 'x · e^x', var: 'x', lower: '0', upper: '1' },
+    hint: 'Bounds may be numbers, π/2, or ∞.',
   },
   {
     id: 'limit',
@@ -97,21 +78,15 @@ export const CHAPTERS = [
     title: 'Of Limits',
     blurb:
       'Of the value toward which a quantity tendeth as its variable approacheth a given point, from the left or from the right.',
-    initial: 'L',
+    initial: 'O',
     actions: ['Both sides', 'From left', 'From right'],
     fields: [
       { key: 'expr', label: 'Function f(x)', placeholder: 'sin(x) / x' },
       { key: 'var', label: 'Variable', placeholder: 'x', short: true },
       { key: 'to', label: 'Approaching', placeholder: '0', short: true },
     ],
-    sample: {
-      given: '\\lim_{x \\to 0} \\dfrac{\\sin x}{x}',
-      steps: [
-        { note: 'The form being indeterminate', tex: '\\tfrac{0}{0}' },
-        { note: "By the rule of l'Hôpital", tex: '\\lim_{x\\to 0} \\dfrac{\\cos x}{1}' },
-      ],
-      result: '1',
-    },
+    example: { expr: 'sin(x) / x', var: 'x', to: '0' },
+    hint: 'The point may be a number or ∞ (or −∞).',
   },
 ]
 

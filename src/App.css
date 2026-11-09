@@ -556,14 +556,6 @@
   color: var(--rubric);
 }
 
-.design-note {
-  margin-top: 22px;
-  font-size: 0.9rem;
-  font-style: italic;
-  color: var(--ink-faint);
-  border-top: 1px dotted var(--ink-faint);
-  padding-top: 8px;
-}
 
 /* ───────────────── Colophon ───────────────── */
 .colophon {
@@ -648,4 +640,47 @@
   .book {
     animation: none;
   }
+}
+
+/* ───────────────── Hints, errata, long formulae ───────────────── */
+.hint {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+.erratum .prop-heading {
+  font-size: 1.3rem;
+}
+
+.erratum-text {
+  margin: 6px 0 14px;
+  font-size: 1.15rem;
+  color: var(--rubric-deep);
+}
+
+.erratum-hint {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.erratum-hint code {
+  font-family: var(--font-body);
+  font-style: normal;
+  padding: 1px 6px;
+  border: 1px dotted var(--ink-faint);
+}
+
+/* Long results scroll within the page rather than overflow it */
+.given .katex-display,
+.steps .katex-display,
+.result-box .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+}
+
+.nowrap {
+  white-space: nowrap;
 }
