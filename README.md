@@ -17,7 +17,7 @@ mathematics book, covering everything from basic arithmetic to introductory calc
 
 - [x] Stage 1 — design (ancient-manuscript theme, layout, responsive)
 - [x] Stage 2 — computation engine (math.js + nerdamer) with step-by-step working
-- [ ] Stage 3 — deploy to GitHub Pages
+- [x] Stage 3 — deployed to GitHub Pages: https://rijkaard1.github.io/Mathematical-Calculator/
 
 ## Running locally
 
