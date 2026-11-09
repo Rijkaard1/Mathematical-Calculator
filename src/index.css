@@ -1,0 +1,68 @@
+:root {
+  /* Inks */
+  --ink: #2b1d10;
+  --ink-soft: #5b4630;
+  --ink-faint: #8a7457;
+  --rubric: #8b1e1e;        /* red ink for headings, as in old manuscripts */
+  --rubric-deep: #5e1010;
+  --gilt: #a8812f;
+
+  /* Paper & desk */
+  --parchment: #ecdcb7;
+  --parchment-light: #f4e8cc;
+  --parchment-edge: #c9a874;
+  --desk: #2a1a0f;
+  --desk-light: #4a2f1b;
+
+  --font-body: 'IM Fell English', 'Garamond', 'Georgia', serif;
+  --font-sc: 'IM Fell English SC', 'IM Fell English', serif;
+  --font-display: 'Cinzel Decorative', 'Trajan Pro', serif;
+  --font-black: 'UnifrakturMaguntia', 'Old English Text MT', serif;
+
+  /* Paper grain made from fractal noise */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --stains: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .3 0 0 0 0 .1 0 0 0 -1.6 .9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.55;
+  background-color: var(--desk);
+  background-image:
+    radial-gradient(ellipse at 50% 20%, rgba(255, 190, 110, 0.18), transparent 60%),
+    radial-gradient(ellipse at 50% 120%, rgba(0, 0, 0, 0.6), transparent 70%),
+    repeating-linear-gradient(
+      93deg,
+      var(--desk) 0 7px,
+      var(--desk-light) 7px 9px,
+      var(--desk) 9px 23px
+    );
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: rgba(139, 30, 30, 0.25);
+}

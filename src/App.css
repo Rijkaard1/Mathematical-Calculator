@@ -1,0 +1,651 @@
+/* ───────────────── Shared parchment surface ───────────────── */
+.title-page,
+.page,
+.contents {
+  background-color: var(--parchment);
+  background-image:
+    var(--stains),
+    var(--grain),
+    radial-gradient(ellipse at center, var(--parchment-light) 0%, var(--parchment) 55%, var(--parchment-edge) 100%);
+  box-shadow:
+    inset 0 0 60px rgba(120, 80, 30, 0.35),
+    inset 0 0 6px rgba(90, 55, 20, 0.5),
+    0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+.desk {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 16px 56px;
+}
+
+/* ───────────────── Title page ───────────────── */
+.title-page {
+  position: relative;
+  text-align: center;
+  padding: 44px 24px 34px;
+  border-radius: 3px;
+  margin-bottom: 22px;
+}
+
+.title-page::before {
+  /* Double ruled border, like a printed frontispiece */
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1.5px solid var(--ink-soft);
+  outline: 1px solid var(--ink-soft);
+  outline-offset: 4px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.title-kicker {
+  font-family: var(--font-sc);
+  letter-spacing: 0.18em;
+  color: var(--rubric);
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.title-page h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 245, 220, 0.6);
+}
+
+.title-main {
+  display: block;
+  font-size: clamp(2.1rem, 6.5vw, 4.2rem);
+  letter-spacing: 0.04em;
+}
+
+.title-sub {
+  max-width: 640px;
+  margin: 4px auto 10px;
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+}
+
+.title-sub em {
+  color: var(--rubric);
+}
+
+.title-imprint {
+  margin: 0;
+  font-family: var(--font-sc);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+
+.fleuron {
+  display: block;
+  width: min(240px, 70%);
+  height: 24px;
+  margin: 12px auto;
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1.3;
+}
+
+.fleuron circle {
+  fill: var(--rubric);
+  stroke: none;
+}
+
+/* ───────────────── Contents (chapter tabs) ───────────────── */
+.contents {
+  border-radius: 3px;
+  padding: 14px 18px 16px;
+  margin-bottom: 22px;
+}
+
+.contents-heading {
+  margin: 0 0 10px;
+  text-align: center;
+  font-family: var(--font-black);
+  font-weight: 400;
+  font-size: 1.6rem;
+  color: var(--rubric);
+}
+
+.contents ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.chapter-tab {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  background: transparent;
+  border: 1px solid rgba(91, 70, 48, 0.35);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.chapter-tab:hover {
+  background: rgba(139, 30, 30, 0.07);
+  border-color: var(--rubric);
+}
+
+.chapter-tab.active {
+  background: rgba(139, 30, 30, 0.1);
+  border-color: var(--rubric);
+  box-shadow: inset 0 0 0 1px var(--rubric);
+}
+
+.tab-numeral {
+  font-family: var(--font-sc);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: var(--rubric);
+}
+
+.tab-latin {
+  font-style: italic;
+  font-size: 1.05rem;
+}
+
+.chapter-tab:focus-visible,
+.mode:focus-visible,
+.key:focus-visible,
+.seal:focus-visible,
+.clear-link:focus-visible {
+  outline: 2px dashed var(--rubric);
+  outline-offset: 2px;
+}
+
+/* ───────────────── The open book ───────────────── */
+.book {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+  animation: open-leaf 0.45s ease-out;
+}
+
+@keyframes open-leaf {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.page {
+  position: relative;
+  padding: 26px 34px 54px;
+  min-height: 640px;
+}
+
+.page-left {
+  border-radius: 4px 0 0 4px;
+  background-image:
+    linear-gradient(to left, rgba(80, 50, 20, 0.35), transparent 9%),
+    var(--stains),
+    var(--grain),
+    radial-gradient(ellipse at center, var(--parchment-light) 0%, var(--parchment) 55%, var(--parchment-edge) 100%);
+}
+
+.page-right {
+  border-radius: 0 4px 4px 0;
+  background-image:
+    linear-gradient(to right, rgba(80, 50, 20, 0.35), transparent 9%),
+    var(--stains),
+    var(--grain),
+    radial-gradient(ellipse at center, var(--parchment-light) 0%, var(--parchment) 55%, var(--parchment-edge) 100%);
+}
+
+.spine {
+  background: linear-gradient(to right, #6b4a2b, #3a2414 45%, #3a2414 55%, #6b4a2b);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-sc);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+  border-bottom: 1px solid rgba(91, 70, 48, 0.4);
+  padding-bottom: 6px;
+  margin-bottom: 18px;
+}
+
+.folio {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  text-align: center;
+  font-style: italic;
+  color: var(--ink-faint);
+  font-size: 0.95rem;
+}
+
+/* ───────────────── Left leaf: inscription ───────────────── */
+.chapter-title {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.chapter-numeral {
+  display: block;
+  font-family: var(--font-sc);
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  color: var(--rubric);
+}
+
+.chapter-blurb {
+  margin: 0 0 18px;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.drop-cap {
+  float: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 3.4rem;
+  line-height: 0.85;
+  margin: 4px 10px 0 0;
+  padding: 4px 8px 6px;
+  border: 1.5px solid var(--gilt);
+  background: rgba(168, 129, 47, 0.12);
+  color: var(--rubric);
+  text-shadow: 1px 1px 0 var(--gilt);
+}
+
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.mode {
+  padding: 4px 14px;
+  background: transparent;
+  border: 1px solid rgba(91, 70, 48, 0.5);
+  border-radius: 999px;
+  font-style: italic;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mode:hover {
+  border-color: var(--rubric);
+}
+
+.mode.active {
+  background: var(--rubric);
+  border-color: var(--rubric);
+  color: var(--parchment-light);
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-bottom: 16px;
+}
+
+.field {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.field.short {
+  flex: 1 1 90px;
+}
+
+.field-label {
+  font-family: var(--font-sc);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.field input {
+  width: 100%;
+  padding: 6px 2px 4px;
+  font-size: 1.35rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--ink-soft);
+  outline: none;
+  caret-color: var(--rubric);
+}
+
+.field input::placeholder {
+  color: var(--ink-faint);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.field input:focus {
+  border-bottom-color: var(--rubric);
+  box-shadow: 0 2px 0 -0.5px var(--rubric);
+}
+
+/* The reckoning tablet: keys look like pressed into wax / stone */
+.tablet {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(91, 70, 48, 0.45);
+  border-radius: 3px;
+  background: rgba(120, 85, 40, 0.08);
+  box-shadow: inset 0 1px 6px rgba(70, 40, 10, 0.25);
+}
+
+.key {
+  aspect-ratio: 1.5 / 1;
+  min-width: 0;
+  padding: 0;
+  min-height: 36px;
+  font-size: 1.1rem;
+  background: linear-gradient(to bottom, #f1e3c2, #dcc596);
+  border: 1px solid #a8885a;
+  border-radius: 3px;
+  box-shadow: 0 2px 0 #8c6c42, 0 3px 4px rgba(60, 35, 10, 0.3);
+  cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.key:hover {
+  background: linear-gradient(to bottom, #f6ead0, #e2cda2);
+}
+
+.key:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 #8c6c42, 0 1px 2px rgba(60, 35, 10, 0.3);
+}
+
+.seal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.clear-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-style: italic;
+  color: var(--ink-soft);
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.clear-link:hover {
+  color: var(--rubric);
+}
+
+/* Wax seal "compute" button */
+.seal {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background: radial-gradient(circle at 35% 30%, #c0392b, var(--rubric) 45%, var(--rubric-deep) 80%);
+  box-shadow:
+    inset 0 -4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 3px 6px rgba(255, 160, 140, 0.35),
+    0 4px 10px rgba(0, 0, 0, 0.4);
+  clip-path: polygon(50% 0, 61% 4%, 72% 2%, 79% 11%, 90% 14%, 93% 26%, 100% 36%, 97% 48%, 100% 60%, 93% 70%, 91% 82%, 80% 87%, 72% 97%, 60% 95%, 50% 100%, 39% 96%, 28% 98%, 20% 89%, 10% 86%, 7% 74%, 0 64%, 3% 52%, 0 40%, 6% 30%, 9% 18%, 20% 13%, 28% 3%, 40% 5%);
+  transition: transform 0.15s;
+}
+
+.seal span {
+  position: absolute;
+  inset: 12px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid rgba(255, 200, 180, 0.45);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #f5d7c8;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.seal:hover {
+  transform: rotate(-6deg) scale(1.04);
+}
+
+.seal:active {
+  transform: scale(0.95);
+}
+
+/* ───────────────── Right leaf: demonstration ───────────────── */
+.margin-figure {
+  position: absolute;
+  top: 54px;
+  right: 22px;
+  width: 92px;
+  height: 92px;
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1.1;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.margin-figure .faint {
+  stroke-dasharray: 3 3;
+}
+
+.margin-figure text {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 11px;
+  fill: var(--ink-soft);
+  stroke: none;
+}
+
+.awaiting {
+  display: grid;
+  place-content: center;
+  min-height: 460px;
+  text-align: center;
+}
+
+.awaiting-text {
+  max-width: 340px;
+  margin: 0 auto;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--ink-faint);
+}
+
+.demonstration {
+  padding-right: 90px;
+}
+
+.prop-heading {
+  margin: 14px 0 4px;
+  font-family: var(--font-sc);
+  font-weight: 400;
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+  color: var(--rubric);
+}
+
+.prop-heading:first-child {
+  margin-top: 0;
+}
+
+.given .katex-display,
+.steps .katex-display,
+.result-box .katex-display {
+  margin: 0.4em 0;
+}
+
+.tex {
+  color: var(--ink);
+}
+
+.steps {
+  margin: 0;
+  padding-left: 1.4em;
+  list-style: upper-roman;
+}
+
+.steps li {
+  margin-bottom: 6px;
+}
+
+.steps li::marker {
+  font-family: var(--font-sc);
+  color: var(--rubric);
+}
+
+.step-note {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.result-box {
+  position: relative;
+  margin: 6px 0 4px;
+  padding: 6px 16px;
+  border: 1.5px solid var(--ink-soft);
+  outline: 1px solid var(--ink-soft);
+  outline-offset: 3px;
+  font-size: 1.25rem;
+  background: rgba(255, 250, 230, 0.25);
+}
+
+.qed {
+  margin: 10px 0 0;
+  text-align: right;
+  font-style: italic;
+}
+
+.qed::after {
+  content: ' ∎';
+  color: var(--rubric);
+}
+
+.design-note {
+  margin-top: 22px;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-faint);
+  border-top: 1px dotted var(--ink-faint);
+  padding-top: 8px;
+}
+
+/* ───────────────── Colophon ───────────────── */
+.colophon {
+  text-align: center;
+  color: #d9c39a;
+  margin-top: 30px;
+  font-style: italic;
+}
+
+.colophon .fleuron {
+  stroke: #b89b6c;
+}
+
+.colophon .sc {
+  font-family: var(--font-sc);
+  font-style: normal;
+  letter-spacing: 0.12em;
+}
+
+/* ───────────────── Narrow screens: pages stack ───────────────── */
+@media (max-width: 860px) {
+  .contents ol {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+
+  .book {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .spine {
+    height: 12px;
+    background: linear-gradient(to bottom, #6b4a2b, #3a2414 45%, #3a2414 55%, #6b4a2b);
+  }
+
+  .page-left,
+  .page-right {
+    border-radius: 4px;
+    background-image:
+      var(--stains),
+      var(--grain),
+      radial-gradient(ellipse at center, var(--parchment-light) 0%, var(--parchment) 55%, var(--parchment-edge) 100%);
+  }
+
+  .page {
+    min-height: 0;
+    padding: 22px 18px 50px;
+  }
+
+  .awaiting {
+    min-height: 220px;
+  }
+
+  .demonstration {
+    padding-right: 0;
+  }
+
+  .margin-figure {
+    width: 60px;
+    height: 60px;
+    top: 46px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  body {
+    font-size: 17px;
+  }
+
+  .tablet {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .key {
+    font-size: 0.95rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book {
+    animation: none;
+  }
+}
