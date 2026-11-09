@@ -9,11 +9,11 @@ export const CHAPTERS = [
     latin: 'De Arithmetica',
     title: 'Of Arithmetick',
     blurb:
-      'Wherein the four operations of number, together with powers, roots and the factorial, are set forth and reckoned.',
+      'Wherein the four operations of number, together with powers, roots and the factorial, are set forth and reckoned — among the real numbers and, where these fail, among the imaginary.',
     initial: 'W',
     fields: [{ key: 'expr', label: 'Expression to be reckoned', placeholder: '(3 + 4) × 12 ÷ 7' }],
     example: { expr: '(3 + 4) × 12 ÷ 7' },
-    hint: 'Angles are in radians. log is to base 10, ln is natural.',
+    hint: 'i is the imaginary unit (i² = −1), e.g. √(−4) or (3+2i)×(1−i). Angles are in radians; log is base 10, ln natural.',
   },
   {
     id: 'algebra',
@@ -35,7 +35,7 @@ export const CHAPTERS = [
       Expand: '(x + 1)^3',
       Factor: 'x^4 - 1',
     },
-    hint: 'Write 2x or 2*x alike; ^ raiseth to a power.',
+    hint: 'Write 2x or 2*x alike; ^ raiseth to a power. Where no real root existeth, the imaginary roots are given (x² + 1 = 0 → x = ±i).',
   },
   {
     id: 'derivative',
@@ -95,6 +95,7 @@ export const KEYPAD = [
   ['7', '8', '9', '÷', '(', ')'],
   ['4', '5', '6', '×', '^', '√'],
   ['1', '2', '3', '−', 'π', 'e'],
-  ['0', '.', '!', '+', 'x', 'sin'],
-  ['cos', 'tan', 'ln', 'log', '∞', '⌫'],
+  ['0', '.', '!', '+', 'x', 'i'],
+  ['sin', 'cos', 'tan', 'ln', 'log', 'abs'],
+  ['=', '∞', 'asin', 'acos', 'atan', '⌫'],
 ]

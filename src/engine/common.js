@@ -141,6 +141,22 @@ export function fmt(n) {
   return s.replace(/e\+?(-?\d+)/, ' \\times 10^{$1}')
 }
 
+/** Format a complex number a + bi (dropping a part that is merely rounding noise). */
+export function fmtComplex(re, im) {
+  const tiny = (x, scale) => Math.abs(x) < 1e-12 * Math.max(1, Math.abs(scale))
+  if (tiny(im, re)) return fmt(re)
+  const mag = Math.abs(im)
+  const imPart = mag === 1 ? 'i' : `${fmt(mag)}i`
+  if (tiny(re, im)) return im < 0 ? `-${imPart}` : imPart
+  return `${fmt(re)} ${im < 0 ? '-' : '+'} ${imPart}`
+}
+
+/** Split a mathjs value into { re, im } numbers. */
+export function parts(v) {
+  if (v && typeof v === 'object' && 're' in v) return { re: Number(v.re), im: Number(v.im) }
+  return { re: Number(v), im: 0 }
+}
+
 /** Numeric value of a nerdamer result, or NaN if it is symbolic. */
 export function valueOf(expr) {
   const s = String(expr)

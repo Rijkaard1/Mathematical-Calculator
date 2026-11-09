@@ -80,7 +80,7 @@ function Contents({ active, onSelect }) {
   )
 }
 
-const FUNCTION_KEYS = ['sin', 'cos', 'tan', 'ln', 'log', '√']
+const FUNCTION_KEYS = ['sin', 'cos', 'tan', 'ln', 'log', '√', 'abs', 'asin', 'acos', 'atan']
 
 function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
   const inputs = useRef({})
@@ -179,7 +179,9 @@ function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
               className="key"
               onMouseDown={(e) => e.preventDefault() /* keep the caret in the field */}
               onClick={() => press(k)}
-              aria-label={k === '⌫' ? 'Erase one character' : k === '^' ? 'Power' : undefined}
+              aria-label={
+                k === '⌫' ? 'Erase one character' : k === '^' ? 'Power' : k === 'i' ? 'Imaginary unit i' : undefined
+              }
             >
               {k === '^' ? 'xⁿ' : k}
             </button>

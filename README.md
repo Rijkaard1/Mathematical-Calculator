@@ -31,8 +31,8 @@ UnifrakturMaguntia typefaces from Google Fonts.
 
 ## How the engine works
 
-- **Arithmetic** — parsed with math.js and reduced one operation at a time, following the order of operations, so every step is shown.
-- **Algebra** — nerdamer simplifies, expands, factors and solves (including irrational and imaginary roots).
+- **Arithmetic** — parsed with math.js and reduced one operation at a time, following the order of operations, so every step is shown. Works with imaginary numbers too: √(−4) = 2i, (3+2i)(1−i) = 5 − i, e^(iπ) = −1.
+- **Algebra** — nerdamer simplifies, expands, factors and solves. When no real root exists the imaginary roots are given as a ± bi, and an unfactorable quadratic shows the formula and its negative discriminant (x² + 2x + 5 = 0 → Δ = −16 → x = −1 ± 2i).
 - **Differentiation** — names the governing rule (sum, product, quotient, chain, power, exponential, logarithmic) before giving the reduced result; any order from 1 to 10.
 - **Integration** — every antiderivative is checked by differentiating it back. Definite integrals use the fundamental theorem, cross-checked against Simpson's rule, and fall back to numerical quadrature when no closed form exists. Infinite bounds are supported.
 - **Limits** — one-sided limits are computed separately and compared, so jump discontinuities such as |x|/x at 0 are reported correctly as non-existent; 0/0 forms show the l'Hôpital step.
