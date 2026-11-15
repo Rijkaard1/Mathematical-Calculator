@@ -3,6 +3,8 @@
 *A Treatise upon the Art of Reckoning* — a web calculator styled after an old printed
 mathematics book, covering everything from basic arithmetic to introductory calculus.
 
+**Live site:** https://rijkaard1.github.io/Mathematical-Calculator/ · **Full documentation:** [docs/](docs/README.md)
+
 ## Chapters
 
 | Liber | Chapter | What it computes |

@@ -129,7 +129,8 @@ function solve(src, v) {
 
   const shown = real.map((r) => {
     const n = valueOf(r)
-    const exact = tex(r)
+    // nerdamer writes "any whole number" as _n; show it as a plain n.
+    const exact = tex(r.replace(/_n/g, "n"))
     const approx = Number.isFinite(n) && !/^-?\d+$/.test(r) ? ` \\approx ${fmt(n)}` : ''
     return `${v} = ${exact}${approx}`
   })
