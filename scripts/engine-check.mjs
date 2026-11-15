@@ -8,6 +8,7 @@ const cases = [
  ['limit',{expr:'sin(x) / x',to:'0'},'Both sides'],['limit',{expr:'abs(x)/x',to:'0'},'Both sides'],['limit',{expr:'abs(x)/x',to:'0'},'From left'],['limit',{expr:'1/x',to:'0'},'Both sides'],['limit',{expr:'1/x',to:'0'},'From right'],['limit',{expr:'(x^2-4)/(x-2)',to:'2'},'Both sides'],['limit',{expr:'(1+1/x)^x',to:'∞'},'Both sides'],['limit',{expr:'sin(1/x)',to:'0'},'Both sides'],['limit',{expr:'x*sin(1/x)',to:'0'},'Both sides'],['limit',{expr:'x^2',to:'3'},'Both sides'],['limit',{expr:'1/x^2',to:'0'},'Both sides'],
  // Degrees and radians (fourth item: the angle measure)
  ['arithmetic',{expr:'sin(30) + cos(60)'},undefined,'deg'],['arithmetic',{expr:'tan(90)'},undefined,'deg'],['arithmetic',{expr:'asin(0.5)'},undefined,'deg'],['arithmetic',{expr:'sin(30°)'},undefined,'rad'],
+ ['arithmetic',{expr:'sin(π)'},undefined,'rad'],['arithmetic',{expr:'cos(π/2)'},undefined,'rad'],['arithmetic',{expr:'tan(π/2)'},undefined,'rad'],['arithmetic',{expr:'sin(3π/2)'},undefined,'rad'],
  ['algebra',{expr:'sin(x)=1/2',var:'x'},'Solve','deg'],['algebra',{expr:'tan(x)=1',var:'x'},'Solve','deg'],['algebra',{expr:'sin(x)=2',var:'x'},'Solve','deg'],['algebra',{expr:'sin(x)=1/2',var:'x'},'Solve','rad'],
 ];
 for (const [c,v,m,a] of cases){ const r=compute(c,v,m,a); console.log(`\n## ${c} ${m||''} ${a||''} ${JSON.stringify(v)}`); if(r.error){console.log('ERROR:',r.error);continue} console.log('given:',r.given); for(const s of r.steps) console.log(' -',s.note,'|',s.sub||'','|',s.tex||''); console.log('RESULT:',r.result);}

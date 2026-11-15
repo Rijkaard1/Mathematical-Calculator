@@ -173,6 +173,32 @@ function degreeFn(name) {
   }
 }
 
+/** Name a multiple of π/2 for the reader: π/2, −π/2, 3π/2 … */
+const halfPiName = (q) => (q === 1 ? 'π/2' : q === -1 ? '−π/2' : `${q}π/2`)
+
+/**
+ * The radian functions, made exact at the quarter turns. The computer's π is a hair
+ * short of the true π, so without this sin(π) comes out as 1.22 × 10⁻¹⁶ instead of 0.
+ */
+function radianFn(name) {
+  return (x) => {
+    if (typeof x === 'number' && Number.isFinite(x)) {
+      const k = x / (Math.PI / 2)
+      const q = Math.round(k)
+      if (Math.abs(k - q) < 1e-10 * Math.max(1, Math.abs(q))) {
+        const v = QUARTER[name][(((q % 4) + 4) % 4) * 90]
+        if (v === null) {
+          throw new ReckoningError(
+            `The tangent of ${halfPiName(q)} is undefined, for the cosine there is nothing (cos ${halfPiName(q)} = 0).`,
+          )
+        }
+        return v
+      }
+    }
+    return math[name](x)
+  }
+}
+
 function inverseDegreeFn(name) {
   return (x) => {
     const v = math[name](x)
@@ -181,12 +207,16 @@ function inverseDegreeFn(name) {
 }
 
 /**
- * Functions that replace the usual radian ones when angles are measured in degrees.
- * Passed to math.js as a scope, which takes precedence over its built-in functions.
+ * Functions that replace math.js's own sin, cos, tan …: in degrees, or in radians
+ * made exact at the quarter turns. Passed to math.js as a scope, which takes
+ * precedence over its built-in functions.
  */
 export function angleScope(angle) {
-  if (angle !== 'deg') return {}
   const scope = {}
+  if (angle !== 'deg') {
+    for (const f of Object.keys(QUARTER)) scope[f] = radianFn(f)
+    return scope
+  }
   for (const f of TRIG) scope[f] = degreeFn(f)
   for (const f of INVERSE_TRIG) scope[f] = inverseDegreeFn(f)
   return scope
