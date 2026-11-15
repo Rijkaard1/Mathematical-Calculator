@@ -1,6 +1,46 @@
 // Liber II — simplify, expand, factor and solve.
 import nerdamer from 'nerdamer'
-import { normalize, cleanVar, tex, parse, valueOf, fmt, hasVar, ReckoningError } from './common.js'
+import { math, normalize, cleanVar, tex, parse, valueOf, fmt, hasVar, TRIG, INVERSE_TRIG, ReckoningError } from './common.js'
+
+// A letter must not come just before (so "asin" is not read as "sin"), but a digit may ("2sin").
+const TRIG_CALL = /(^|[^a-zA-Z])(sin|cos|tan|sec|csc|cot|asin|acos|atan)\s*\(/
+const FORWARD_TRIG_CALL = /(^|[^a-zA-Z])(sin|cos|tan|sec|csc|cot)\s*\(/
+
+/** Write a periodic solution as  a + b·n  (e.g. 30 + 360n), the constant first. */
+function periodicTex(s) {
+  try {
+    const a = nerdamer(s, { _n: 0 }).toString()
+    const b = nerdamer(`(${nerdamer(s, { _n: 1 }).toString()})-(${a})`).toString()
+    const bTex = b === '1' ? '' : b === '-1' ? '-' : tex(b)
+    // The space keeps "2\pi n" from running together into an unknown command "\pin".
+    if (a === '0') return `${bTex} n`
+    const sign = bTex.startsWith('-') ? '-' : '+'
+    return `${tex(a)} ${sign} ${bTex.replace(/^-/, '')} n`
+  } catch {
+    return tex(s.replace(/_n/g, 'n'))
+  }
+}
+
+/**
+ * Rewrite one side of an equation so that its angles are read in degrees:
+ * sin(u) → sin(π/180 · u), and asin(u) → (180/π) · asin(u).
+ */
+function degreesToRadians(side) {
+  const { FunctionNode, OperatorNode, ParenthesisNode } = math
+  const walk = (node) => {
+    const m = node.map((child) => walk(child))
+    const name = m.isFunctionNode ? (m.fn.name ?? m.name) : null
+    if (TRIG.includes(name)) {
+      const scaled = new OperatorNode('*', 'multiply', [math.parse('(pi/180)'), new ParenthesisNode(m.args[0])])
+      return new FunctionNode(m.fn, [scaled])
+    }
+    if (INVERSE_TRIG.includes(name)) {
+      return new ParenthesisNode(new OperatorNode('*', 'multiply', [math.parse('(180/pi)'), m]))
+    }
+    return m
+  }
+  return walk(math.parse(side)).toString({ implicit: 'show' })
+}
 
 function splitEquation(src) {
   const parts = src.split('=')
@@ -16,11 +56,11 @@ function run(op, s) {
   }
 }
 
-export function algebra({ expr, var: rawVar }, mode = 'Simplify') {
-  const src = normalize(expr)
+export function algebra({ expr, var: rawVar }, mode = 'Simplify', angle = 'rad') {
+  const src = normalize(expr, angle)
   if (!src) throw new ReckoningError('The slate is empty; inscribe an expression first.')
 
-  if (mode === 'Solve') return solve(src, cleanVar(rawVar))
+  if (mode === 'Solve') return solve(src, cleanVar(rawVar), angle)
 
   if (src.includes('=')) {
     const verb = { Simplify: 'simplified', Expand: 'expanded', Factor: 'factored' }[mode] || 'simplified'
@@ -66,7 +106,7 @@ export function algebra({ expr, var: rawVar }, mode = 'Simplify') {
   return { given, steps, result }
 }
 
-function solve(src, v) {
+function solve(src, v, angle = 'rad') {
   const [lhs, rhs = '0'] = splitEquation(src)
   if (!lhs) throw new ReckoningError('The left side of the equation is empty.')
   const zero = rhs === '0' ? lhs : `(${lhs})-(${rhs})`
@@ -74,6 +114,9 @@ function solve(src, v) {
 
   const given = `${tex(lhs)} = ${tex(rhs)}`
   const steps = []
+
+  // A trigonometric equation: solved directly, measuring angles as the reader chose.
+  if (TRIG_CALL.test(src)) return solveTrig(lhs, rhs, v, angle, given)
 
   let standard
   try {
@@ -149,7 +192,94 @@ function solve(src, v) {
     steps.push({ note: 'Imaginary roots of an equation with real coefficients come in conjugate pairs, a + bi and a − bi' })
   }
 
-  return { given, steps, result: shown.join(',\\quad ') }
+  return { given, steps, result: joinRoots(shown) }
+}
+
+// ───────────── Trigonometric equations ─────────────
+
+function solveTrig(lhs, rhs, v, angle, given) {
+  const deg = angle === 'deg'
+  const steps = []
+  let equation = `${lhs}=${rhs}`
+  if (deg) {
+    let l, r
+    try {
+      l = degreesToRadians(lhs)
+      r = degreesToRadians(rhs)
+    } catch (e) {
+      throw new ReckoningError(`The expression could not be read: ${e.message}`)
+    }
+    equation = `${l}=${r}`
+    steps.push({
+      note: 'Angles being measured in degrees, each angle θ is read as θ · π/180 radians',
+      tex: `${tex(l)} = ${tex(r)}`,
+    })
+  } else {
+    steps.push({ note: 'Angles being measured in radians, the equation is solved as it standeth' })
+  }
+
+  let roots
+  try {
+    roots = nerdamer.solve(equation, v).toString()
+  } catch (e) {
+    throw new ReckoningError(`The equation could not be solved: ${e.message}`)
+  }
+  // Keep only real solutions: sin(x) = 2 yieldeth arcsin(2), which is no real angle.
+  const isReal = (r) => {
+    try {
+      return Number.isFinite(valueOf(nerdamer(r, { _n: 0 }).toString()))
+    } catch {
+      return false
+    }
+  }
+  const found = roots
+    .replace(/^[[{]|[\]}]$/g, '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const list = found.filter(isReal)
+  if (!list.length) {
+    steps.push({
+      note: found.length
+        ? 'But the sine and cosine never pass beyond −1 and 1, so no real angle satisfieth the equation'
+        : 'No angle satisfieth the equation',
+    })
+    return { given, steps, result: '\\text{No real solution}' }
+  }
+
+  const periodic = list.some((r) => /_n/.test(r))
+  // The unknown is an angle only when it standeth inside sin, cos, …; in asin(x) = 30 it is a ratio.
+  const unknownIsAngle = deg && FORWARD_TRIG_CALL.test(`${lhs}=${rhs}`)
+  const shown = list.map((r) => {
+    let s = r
+    try {
+      s = nerdamer(`expand(${r})`).toString()
+    } catch {
+      /* keep as found */
+    }
+    const exact = /_n/.test(s) ? periodicTex(s) : tex(s)
+    const n = valueOf(s)
+    const approx = Number.isFinite(n) && !/^-?\d+$/.test(s) ? ` \\approx ${fmt(n)}` : ''
+    if (!unknownIsAngle) return `${v} = ${exact}${approx}`
+    const plain = /^-?[\d.]+$/.test(s)
+    return `${v} = ${plain ? `${exact}^{\\circ}` : `\\left(${exact}\\right)^{\\circ}`}${approx ? `${approx}^{\\circ}` : ''}`
+  })
+
+  if (periodic) {
+    steps.push({
+      note: deg
+        ? 'The sine and cosine repeat every 360°, and the tangent every 180°; here n standeth for any whole number'
+        : 'The sine and cosine repeat every 2π, and the tangent every π; here n standeth for any whole number',
+    })
+  }
+  return { given, steps, result: joinRoots(shown) }
+}
+
+/** Short answers sit side by side; long ones are stacked, one per line, so none is cut off. */
+function joinRoots(shown) {
+  const length = shown.join('').replace(/\\[a-z]+|[{}]/g, '').length
+  if (shown.length < 2 || length <= 26) return shown.join(',\\quad ')
+  return `\\begin{gathered}${shown.join(' \\\\ ')}\\end{gathered}`
 }
 
 // ───────────── Imaginary roots ─────────────

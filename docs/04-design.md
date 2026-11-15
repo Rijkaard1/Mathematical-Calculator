@@ -128,6 +128,13 @@ turns red when you are writing on it. Placeholders are shown in faint italic.
 ### The mode buttons
 Small rounded tabs in italic. The active one is filled with red ink.
 
+### The degrees / radians switch
+Shown in Arithmetic and Algebra, just under the mode buttons: two joined, square-cornered
+plates in small capitals — **DEGREES °** and **RADIANS *rad*** — with the chosen one inked
+dark. They are square, unlike the round mode tabs, so they don't look like another
+"operation" button. In the calculus chapters the switch is replaced by a short italic note
+explaining that angles there are in radians.
+
 ### The wax seal
 The calculate button is a **red wax seal** with an uneven, melted edge and a ring stamped
 with **Q.E.F.** — short for *quod erat faciendum*, Latin for "which was to be done", a phrase

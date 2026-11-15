@@ -13,9 +13,9 @@ export class ReckoningError extends Error {}
  *  - `ln`  → natural log (`log` in both libraries)
  *  - `log` → base-10 log (`log10`)
  */
-export function normalize(input) {
+export function normalize(input, angle = 'rad') {
   if (input == null) return ''
-  let s = String(input).trim()
+  let s = degreeSign(String(input).trim(), angle)
   s = s
     .replace(/×|·|⋅|∙/g, '*')
     .replace(/÷|:/g, '/')
@@ -139,6 +139,62 @@ export function fmt(n) {
   if (Number.isInteger(n) && Math.abs(n) < 1e15) return String(n)
   const s = math.format(n, { precision: 10, lowerExp: -6, upperExp: 15 })
   return s.replace(/e\+?(-?\d+)/, ' \\times 10^{$1}')
+}
+
+// ───────────── Angles: degrees or radians ─────────────
+
+export const TRIG = ['sin', 'cos', 'tan', 'sec', 'csc', 'cot']
+export const INVERSE_TRIG = ['asin', 'acos', 'atan']
+
+const RAD = Math.PI / 180
+
+/** Position of a whole-degree angle within one turn (0 ≤ r < 360), or null if not a whole number. */
+const turn = (x) => (typeof x === 'number' && Number.isInteger(x) ? ((x % 360) + 360) % 360 : null)
+
+/** Exact values at the quarter turns, where floating point would leave tiny errors (cos 90° = 6e-17). */
+const QUARTER = {
+  sin: { 0: 0, 90: 1, 180: 0, 270: -1 },
+  cos: { 0: 1, 90: 0, 180: -1, 270: 0 },
+  tan: { 0: 0, 90: null, 180: 0, 270: null },
+}
+
+function degreeFn(name) {
+  return (x) => {
+    const r = turn(x)
+    if (r !== null && name in QUARTER && r in QUARTER[name]) {
+      const v = QUARTER[name][r]
+      if (v === null) {
+        throw new ReckoningError(`The tangent of ${x}° is undefined, for the cosine there is nothing (cos ${x}° = 0).`)
+      }
+      return v
+    }
+    if (typeof x === 'number') return math[name](x * RAD)
+    return math[name](math.multiply(x, RAD)) // complex angle
+  }
+}
+
+function inverseDegreeFn(name) {
+  return (x) => {
+    const v = math[name](x)
+    return typeof v === 'number' ? v / RAD : math.divide(v, RAD)
+  }
+}
+
+/**
+ * Functions that replace the usual radian ones when angles are measured in degrees.
+ * Passed to math.js as a scope, which takes precedence over its built-in functions.
+ */
+export function angleScope(angle) {
+  if (angle !== 'deg') return {}
+  const scope = {}
+  for (const f of TRIG) scope[f] = degreeFn(f)
+  for (const f of INVERSE_TRIG) scope[f] = inverseDegreeFn(f)
+  return scope
+}
+
+/** Turn a typed degree sign into something the libraries understand. */
+export function degreeSign(src, angle) {
+  return angle === 'deg' ? src.replace(/°/g, '') : src.replace(/°/g, '*(pi/180)')
 }
 
 /** Format a complex number a + bi (dropping a part that is merely rounding noise). */

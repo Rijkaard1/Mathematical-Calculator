@@ -13,7 +13,8 @@ export const CHAPTERS = [
     initial: 'W',
     fields: [{ key: 'expr', label: 'Expression to be reckoned', placeholder: '(3 + 4) × 12 ÷ 7' }],
     example: { expr: '(3 + 4) × 12 ÷ 7' },
-    hint: 'i is the imaginary unit (i² = −1), e.g. √(−4) or (3+2i)×(1−i). Angles are in radians; log is base 10, ln natural.',
+    angles: true,
+    hint: 'Choose degrees or radians above; the ° key marks a single angle in degrees, as sin(30°). i is the imaginary unit (i² = −1). log is base 10, ln natural.',
   },
   {
     id: 'algebra',
@@ -35,7 +36,8 @@ export const CHAPTERS = [
       Expand: '(x + 1)^3',
       Factor: 'x^4 - 1',
     },
-    hint: 'Write 2x or 2*x alike; ^ raiseth to a power. Where no real root existeth, the imaginary roots are given (x² + 1 = 0 → x = ±i).',
+    angles: true,
+    hint: 'Write 2x or 2*x alike; ^ raiseth to a power. Trigonometric equations such as sin(x) = 1/2 are solved in the chosen angle measure. Where no real root existeth, imaginary roots are given.',
   },
   {
     id: 'derivative',
@@ -96,6 +98,6 @@ export const KEYPAD = [
   ['4', '5', '6', '×', '^', '√'],
   ['1', '2', '3', '−', 'π', 'e'],
   ['0', '.', '!', '+', 'x', 'i'],
-  ['sin', 'cos', 'tan', 'ln', 'log', 'abs'],
-  ['=', '∞', 'asin', 'acos', 'atan', '⌫'],
+  ['sin', 'cos', 'tan', 'asin', 'acos', 'atan'],
+  ['ln', 'log', '°', '∞', '=', '⌫'],
 ]

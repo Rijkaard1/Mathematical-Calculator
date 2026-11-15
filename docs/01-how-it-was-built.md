@@ -22,7 +22,7 @@ The project was built in three stages:
 | **Stage 3 — Publishing** | Putting the site on the internet with GitHub Pages, so anyone can open it with a link. |
 
 Later, **imaginary numbers** were added, so problems with no real answer (like x² + 1 = 0)
-can still be solved.
+can still be solved. After that came a **degrees / radians switch** for trigonometry.
 
 ---
 
@@ -163,6 +163,22 @@ numbers (x = 0.01, 0.001, 0.0001 …) and watches where the values settle.
 
 ---
 
+## 1.5a How degrees mode works
+
+- **Arithmetic:** math.js lets you hand it your own versions of functions in a *scope*. In
+  degrees mode the engine passes degree versions of sin, cos, tan (and sec, csc, cot) that
+  first multiply the angle by π/180. It also passes asin, acos and atan versions that turn
+  the answer back into degrees. At whole quarter turns (0°, 90°, 180°, 270°) the exact
+  values are used, so cos 90° is exactly 0. tan 90° stops with a clear message.
+- **Algebra (solving):** in degrees mode, every angle in the equation is rewritten before
+  solving: sin(u) becomes sin(π/180 · u), and asin(u) becomes (180/π) · asin(u). Then
+  nerdamer solves it as usual, and the answers come out in degrees. Answers that repeat are
+  tidied into the form a + b·n (e.g. 30 + 360n). Answers that aren't real numbers, like
+  arcsin(2), are thrown away.
+- **The ° sign** is turned into `*(pi/180)` in radians mode, and simply removed in degrees
+  mode.
+- The chosen mode is saved in the browser (localStorage), so it is remembered next time.
+
 ## 1.6 How the calculator checks itself
 
 Maths libraries are clever but not perfect, so the calculator double-checks where it can:
@@ -179,7 +195,7 @@ Maths libraries are clever but not perfect, so the calculator double-checks wher
 
 ## 1.7 Testing
 
-The file `scripts/engine-check.mjs` contains **56 example problems** covering all five
+The file `scripts/engine-check.mjs` contains **64 example problems** covering all five
 chapters — including tricky ones like 5 ÷ 0, sin(1/x) near 0, the integral of 1/√x from 0 to 1,
 and x⁴ + 1 = 0. Running it prints the full working for each one, so any mistake is easy to
 spot:

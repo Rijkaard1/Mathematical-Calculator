@@ -26,6 +26,8 @@ to look like a mathematics book from centuries ago.
 
 - **Five chapters:** Arithmetic · Algebra · Differentiation · Integration · Limits.
 - **Shows its working:** every answer comes with numbered steps and the rule used.
+- **Degrees or radians:** a switch for trigonometry in Arithmetic and Algebra
+  (sin 30° = 0.5, sin(x) = ½ → x = 30° + 360°n), remembered between visits.
 - **Imaginary numbers:** when there is no real answer, it finds the imaginary one
   (x² + 1 = 0 → x = ±i).
 - **Checks itself:** integrals are checked by differentiating back, and limits are checked

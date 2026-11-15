@@ -684,3 +684,71 @@
 .nowrap {
   white-space: nowrap;
 }
+
+/* ───────────── Degrees / radians ───────────── */
+.angle-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 14px;
+}
+
+.angle-label {
+  font-family: var(--font-sc);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin-right: 2px;
+}
+
+/* Two halves of one engraved plate, unlike the round mode tabs above */
+.angle-option {
+  padding: 3px 12px;
+  background: transparent;
+  border: 1px solid rgba(91, 70, 48, 0.55);
+  border-radius: 2px;
+  font-family: var(--font-sc);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.angle-option + .angle-option {
+  margin-left: -7px;
+}
+
+.angle-option:hover {
+  border-color: var(--rubric);
+}
+
+.angle-option.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--parchment-light);
+}
+
+.angle-option:focus-visible {
+  outline: 2px dashed var(--rubric);
+  outline-offset: 2px;
+}
+
+.angle-mark {
+  font-family: var(--font-body);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.angle-note {
+  margin: 0 0 14px;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.angle-note-label {
+  font-family: var(--font-sc);
+  font-style: normal;
+  letter-spacing: 0.06em;
+  color: var(--rubric);
+}

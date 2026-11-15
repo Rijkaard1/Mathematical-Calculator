@@ -77,20 +77,52 @@ Under the input boxes is a keypad of 36 keys, styled like carved tablets:
 | 2 | 4 5 6 × xⁿ √ |
 | 3 | 1 2 3 − π e |
 | 4 | 0 . ! + x i |
-| 5 | sin cos tan ln log abs |
-| 6 | = ∞ asin acos atan ⌫ |
+| 5 | sin cos tan asin acos atan |
+| 6 | ln log ° ∞ = ⌫ |
 
 Useful details:
 
 - Keys type into **whichever box you clicked last**, at the cursor position — so you can
   press **∞** straight into the "Upper bound" box.
-- Function keys (sin, √, ln, abs …) add the opening bracket for you: pressing **sin** types
+- The **°** key marks a single angle as degrees, e.g. `sin(30°)`, whichever angle mode is chosen.
+- Function keys (sin, √, ln, asin …) add the opening bracket for you: pressing **sin** types
   `sin(`.
 - **⌫** deletes one character (or the selected text).
 - You can also just type on your normal keyboard. Both `2x` and `2*x` work, and `^` means
   "to the power of".
 
 ---
+
+## 2.5a Degrees or radians
+
+Different fields measure angles differently. Surveying, navigation, engineering drawings and
+most school geometry use **degrees**. Physics, higher mathematics and calculus use
+**radians**. So Arithmetic and Algebra have a switch at the top of the input page:
+
+**Angles in  [ Degrees ° | Radians rad ]**
+
+| | Degrees | Radians |
+|---|---|---|
+| `sin(30)` | 0.5 | −0.988 (30 radians) |
+| `asin(0.5)` | 30° | 0.5236 rad |
+| `sin(x) = 1/2` | x = 30° + 360°n, 150° + 360°n | x = π/6 + 2πn, 5π/6 + 2πn |
+
+How it works:
+
+- **Switching recalculates at once**, so you can compare both answers.
+- **Your choice is remembered** the next time you open the site, on the same browser.
+- Angles are drawn with a ° sign in the working, e.g. sin(30°).
+- Inverse functions (asin, acos, atan) give their answer in the chosen measure, marked
+  ° or rad.
+- **Exact values at right angles:** cos 90° gives exactly 0 (not a tiny rounding error), and
+  tan 90° gives a clear message that it is undefined.
+- **The ° key** marks one angle in degrees even when Radians is chosen: `sin(30°)` = 0.5
+  in both modes.
+- **Helpful warnings:**
+  - In Radians mode, `sin(30)` gets a note that 30 means 30 radians, in case you meant degrees.
+  - In Degrees mode, `sin(π/2)` gets a note that π/2 is only 1.57°, in case you meant a right angle.
+- **The calculus chapters always use radians**, and say so on the page. Rules like
+  d/dx sin x = cos x are only true when x is in radians.
 
 ## 2.6 Other conveniences
 
@@ -138,4 +170,4 @@ Some examples of what the calculator tells you when it cannot help:
 | 5 factorial | `5!` |
 | an equation | `x^2 - 5x + 6 = 0` |
 
-Angles in trigonometry are always in **radians** (so sin(π/2) = 1).
+In Arithmetic and Algebra, angles follow the **Degrees / Radians** switch (see 2.5a). In the calculus chapters they are always in radians.

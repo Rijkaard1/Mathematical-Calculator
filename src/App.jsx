@@ -82,7 +82,38 @@ function Contents({ active, onSelect }) {
 
 const FUNCTION_KEYS = ['sin', 'cos', 'tan', 'ln', 'log', '√', 'abs', 'asin', 'acos', 'atan']
 
-function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
+function AngleSwitch({ chapter, angle, setAngle }) {
+  if (!chapter.angles) {
+    return (
+      <p className="angle-note">
+        <span className="angle-note-label">Angles:</span> radians. The rules of the calculus, such as
+        d/dx sin x = cos x, hold true only when angles are measured in radians.
+      </p>
+    )
+  }
+  return (
+    <div className="angle-switch" role="radiogroup" aria-label="Angle measure">
+      <span className="angle-label">Angles in</span>
+      {[
+        ['deg', 'Degrees', '°'],
+        ['rad', 'Radians', 'rad'],
+      ].map(([value, label, mark]) => (
+        <button
+          key={value}
+          type="button"
+          role="radio"
+          aria-checked={angle === value}
+          className={angle === value ? 'angle-option active' : 'angle-option'}
+          onClick={() => setAngle(value)}
+        >
+          {label} <span className="angle-mark">{mark}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function InputPage({ chapter, values, setValues, mode, setMode, angle, setAngle, onCompute }) {
   const inputs = useRef({})
   const [focused, setFocused] = useState('expr')
 
@@ -146,6 +177,8 @@ function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
         </div>
       )}
 
+      <AngleSwitch chapter={chapter} angle={angle} setAngle={setAngle} />
+
       <form
         className="inscription"
         onSubmit={(e) => {
@@ -180,7 +213,7 @@ function InputPage({ chapter, values, setValues, mode, setMode, onCompute }) {
               onMouseDown={(e) => e.preventDefault() /* keep the caret in the field */}
               onClick={() => press(k)}
               aria-label={
-                k === '⌫' ? 'Erase one character' : k === '^' ? 'Power' : k === 'i' ? 'Imaginary unit i' : undefined
+                k === '⌫' ? 'Erase one character' : k === '^' ? 'Power' : k === 'i' ? 'Imaginary unit i' : k === '°' ? 'Degrees sign' : undefined
               }
             >
               {k === '^' ? 'xⁿ' : k}
@@ -282,19 +315,43 @@ function ResultPage({ chapter, outcome }) {
 
 const firstMode = (c) => c.actions?.[0]
 
+// The reader's choice of degrees or radians is remembered between visits.
+function loadAngle() {
+  try {
+    return localStorage.getItem('angle') === 'deg' ? 'deg' : 'rad'
+  } catch {
+    return 'rad'
+  }
+}
+
+function saveAngle(a) {
+  try {
+    localStorage.setItem('angle', a)
+  } catch {
+    /* private window: the choice simply is not remembered */
+  }
+}
+
 export default function App() {
   const [active, setActive] = useState(CHAPTERS[0].id)
   const chapter = CHAPTERS.find((c) => c.id === active)
   const [values, setValues] = useState(chapter.example)
   const [mode, setModeState] = useState(firstMode(chapter))
-  const [outcome, setOutcome] = useState(() => compute(chapter.id, chapter.example, firstMode(chapter)))
+  const [angle, setAngleState] = useState(loadAngle)
+  const [outcome, setOutcome] = useState(() => compute(chapter.id, chapter.example, firstMode(chapter), angle))
 
   const select = (id) => {
     const c = CHAPTERS.find((x) => x.id === id)
     setActive(id)
     setValues(c.example)
     setModeState(firstMode(c))
-    setOutcome(compute(c.id, c.example, firstMode(c)))
+    setOutcome(compute(c.id, c.example, firstMode(c), angle))
+  }
+
+  const setAngle = (a) => {
+    setAngleState(a)
+    saveAngle(a)
+    setOutcome(compute(chapter.id, values, mode, a))
   }
 
   const setMode = (m) => {
@@ -306,7 +363,7 @@ export default function App() {
       setValues(next)
     }
     setModeState(m)
-    setOutcome(compute(chapter.id, next, m))
+    setOutcome(compute(chapter.id, next, m, angle))
   }
 
   return (
@@ -320,7 +377,9 @@ export default function App() {
           setValues={setValues}
           mode={mode}
           setMode={setMode}
-          onCompute={() => setOutcome(compute(chapter.id, values, mode))}
+          angle={angle}
+          setAngle={setAngle}
+          onCompute={() => setOutcome(compute(chapter.id, values, mode, angle))}
         />
         <div className="spine" aria-hidden="true" />
         <ResultPage chapter={chapter} outcome={outcome} />

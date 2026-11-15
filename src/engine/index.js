@@ -11,9 +11,9 @@ const ENGINES = { arithmetic, algebra, derivative, integral, limit }
  * Compute a chapter's demonstration.
  * Returns { given, steps: [{ note, sub?, tex? }], result } or { error }.
  */
-export function compute(chapterId, values, mode) {
+export function compute(chapterId, values, mode, angle = 'rad') {
   try {
-    return ENGINES[chapterId](values, mode)
+    return ENGINES[chapterId](values, mode, angle)
   } catch (e) {
     const message =
       e instanceof ReckoningError ? e.message : `The reckoning hath failed: ${e?.message || e}`

@@ -29,8 +29,10 @@ time.
 | Fractions | `1/3 + 1/4` | 7/12 ≈ 0.583 |
 | Roots | `√(16)`, `(−8)^(1/3)` | 4, −2 |
 | Logarithms | `ln(e) + log(100)` | 3 |
-| Trigonometry (radians) | `sin(π/2)` | 1 |
-| Inverse trigonometry | `asin(1)` | 1.570796327 (= π/2) |
+| Trigonometry, radians | `sin(π/2)` | 1 |
+| Trigonometry, degrees | `sin(30)`, `cos(90)`, `tan(45)` | 0.5, 0, 1 |
+| Degree sign (any mode) | `sin(30°)` | 0.5 |
+| Inverse trigonometry | `asin(1)` · `asin(0.5)` in degrees | 1.570796327 rad · 30° |
 | Absolute value | `abs(−7)` | 7 |
 | Constants | π, e | 3.14159…, 2.71828… |
 | Dividing by zero | `5/0` | ∞ |
@@ -58,7 +60,10 @@ Finds every value of the unknown that makes the equation true.
 | `x² + 1 = 0` | x = ±i | Δ = −4, so √−4 = 2i |
 | `x² + 2x + 5 = 0` | x = −1 ± 2i | Δ = −16, so √−16 = 4i |
 | `x³ = 1` | x = 1, x = −½ ± (√3/2)i | Factor, then imaginary roots |
-| `sin(x) = 0` | x = nπ | n stands for any whole number |
+| `sin(x) = 0` | x = nπ (radians) or 180°n (degrees) | n stands for any whole number |
+| `sin(x) = 1/2` (degrees) | x = 30° + 360°n, 150° + 360°n | Angles converted, then solved |
+| `tan(x) = 1` (degrees) | x = 45° + 180°n | The tangent repeats every 180° |
+| `sin(x) = 2` | No real solution | A sine is never more than 1 |
 
 **About imaginary roots:** if the discriminant Δ = b² − 4ac of a quadratic is negative, no
 real number works, so the roots are imaginary. They always come in pairs, a + bi and a − bi.
@@ -155,7 +160,8 @@ point. Three modes: **both sides**, **from the left** (x → a⁻), **from the r
 
 To be honest about its limits:
 
-- **Angles are in radians only** — there is no degrees mode.
+- **Degrees only in Arithmetic and Algebra.** Differentiation, Integration and Limits always
+  use radians, because the calculus rules only hold in radians. There is no gradians mode.
 - **Imaginary numbers** work in Arithmetic and Algebra, but Differentiation, Integration and
   Limits work with real numbers only.
 - **One variable at a time** — no systems of equations (like solving for x and y together),

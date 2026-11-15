@@ -1,5 +1,5 @@
 // Liber I — arithmetic, worked one operation at a time in the order of operations.
-import { math, normalize, fmt, fmtComplex, parts, ReckoningError } from './common.js'
+import { math, normalize, fmt, fmtComplex, parts, angleScope, TRIG, INVERSE_TRIG, ReckoningError } from './common.js'
 
 const { ConstantNode, ParenthesisNode } = math
 
@@ -80,13 +80,44 @@ function toConstant(value) {
 
 const valueOfLeaf = (n) => (n.isParenthesisNode ? valueOfLeaf(n.content) : n.value)
 
+const fnName = (n) => (n.isFunctionNode ? (n.fn.name ?? n.name) : null)
+
+/**
+ * LaTeX options. In degrees, the angle inside sin, cos, … is marked with °,
+ * so the page reads sin(30°) rather than sin(30).
+ */
+function texOptions(angle) {
+  if (angle !== 'deg') return {}
+  const options = {
+    handler: (node, opts) => {
+      const name = fnName(node)
+      if (!TRIG.includes(name)) return undefined
+      const arg = node.args[0]
+      const inner = arg.toTex(opts)
+      const simple = isLeaf(arg) && !arg.isParenthesisNode
+      return `\\${name}\\left(${simple ? inner : `\\left(${inner}\\right)`}^{\\circ}\\right)`
+    },
+  }
+  return options
+}
+
+/** True when a trigonometric function is applied to a whole number that looks like degrees, e.g. sin(30). */
+function looksLikeDegrees(node) {
+  return node
+    .filter((n) => TRIG.includes(fnName(n)))
+    .some((n) => {
+      const a = n.args[0]
+      return a.isConstantNode && Number.isInteger(a.value) && Math.abs(a.value) >= 10
+    })
+}
+
 /**
  * Evaluate the first innermost operation whose operands are all numbers.
  * Returns { node, changed, sub } where `sub` describes the operation performed.
  */
-function reduceOnce(node) {
+function reduceOnce(node, ctx) {
   if (node.isParenthesisNode) {
-    const r = reduceOnce(node.content)
+    const r = reduceOnce(node.content, ctx)
     if (!r.changed) return { node, changed: false }
     const inner = r.node
     const bare = inner.isConstantNode || (inner.isParenthesisNode && inner.content.isConstantNode)
@@ -96,7 +127,7 @@ function reduceOnce(node) {
   if (isLeaf(node)) return { node, changed: false }
   if (node.isOperatorNode || node.isFunctionNode) {
     for (let i = 0; i < node.args.length; i++) {
-      const r = reduceOnce(node.args[i])
+      const r = reduceOnce(node.args[i], ctx)
       if (r.changed) {
         const copy = node.clone()
         copy.args = node.args.slice()
@@ -105,11 +136,11 @@ function reduceOnce(node) {
       }
     }
     if (node.args.every(isLeaf)) {
-      let value = node.evaluate()
+      let value = node.evaluate(ctx.scope)
       // An odd root of a negative number has a real value: (−8)^(1/3) = −2.
       if (node.isOperatorNode && node.fn === 'pow') {
-        const base = parts(node.args[0].evaluate())
-        const exp = parts(node.args[1].evaluate())
+        const base = parts(node.args[0].evaluate(ctx.scope))
+        const exp = parts(node.args[1].evaluate(ctx.scope))
         const n = 1 / exp.re
         if (!isImaginary(base) && !isImaginary(exp) && base.re < 0 && Math.abs(n - Math.round(n)) < 1e-9 && Math.round(n) % 2 !== 0) {
           value = -Math.pow(-base.re, exp.re)
@@ -121,7 +152,7 @@ function reduceOnce(node) {
       // A real operation yielding an imaginary result (e.g. √−4) deserves remark.
       const inputsReal = node.args.every((a) => {
         try {
-          return !isImaginary(parts(a.evaluate()))
+          return !isImaginary(parts(a.evaluate(ctx.scope)))
         } catch {
           return true
         }
@@ -132,7 +163,7 @@ function reduceOnce(node) {
         bornImaginary: inputsReal && isImaginary(out),
         sub: {
           name: name || `the function ${node.name || node.fn}`,
-          tex: `${node.toTex()} = ${fmtComplex(out.re, out.im)}`,
+          tex: `${node.toTex(ctx.tex)} = ${fmtComplex(out.re, out.im)}${ctx.angle === 'deg' && INVERSE_TRIG.includes(fnName(node)) ? '^{\\circ}' : ''}`,
         },
       }
     }
@@ -140,8 +171,9 @@ function reduceOnce(node) {
   return { node, changed: false }
 }
 
-export function arithmetic({ expr }) {
-  const src = normalize(expr)
+export function arithmetic({ expr }, _mode, angle = 'rad') {
+  const ctx = { angle, scope: angleScope(angle), tex: texOptions(angle) }
+  const src = normalize(expr, angle)
   if (!src) throw new ReckoningError('The slate is empty; inscribe an expression first.')
 
   let node
@@ -160,14 +192,31 @@ export function arithmetic({ expr }) {
     )
   }
 
-  const given = node.toTex()
+  const given = node.toTex(ctx.tex)
   const steps = []
+  const usesTrig = node.filter((n) => TRIG.includes(fnName(n)) || INVERSE_TRIG.includes(fnName(n))).length > 0
+  const rootIsInverse = INVERSE_TRIG.includes(fnName(node.isParenthesisNode ? node.content : node))
+  if (usesTrig && angle === 'deg') {
+    steps.push({ note: 'Angles are here measured in degrees, a full turn being', tex: '360^{\\circ} = 2\\pi \\text{ radians}' })
+    const piInside = node
+      .filter((n) => TRIG.includes(fnName(n)))
+      .some((n) => n.args[0].filter((c) => c.isSymbolNode && c.name === 'pi').length > 0)
+    if (piInside) {
+      steps.push({
+        note: 'Mark well: π inside a sine or cosine is the language of radians. In degrees, π/2 is but 1.57°; if a right angle was meant, choose “Radians” above, or write 90',
+      })
+    }
+  } else if (usesTrig && looksLikeDegrees(node)) {
+    steps.push({
+      note: 'Mark well: angles are here measured in radians. If degrees were meant, choose “Degrees” above, or write the sign °, as sin(30°)',
+    })
+  }
   let seen = given
   for (let i = 0; i < 60; i++) {
-    const r = reduceOnce(node)
+    const r = reduceOnce(node, ctx)
     if (!r.changed) break
     node = r.node
-    const whole = node.toTex()
+    const whole = node.toTex(ctx.tex)
     if (whole === seen) continue
     seen = whole
     if (r.bornImaginary && !steps.some((s) => s.imaginary)) {
@@ -183,7 +232,7 @@ export function arithmetic({ expr }) {
   // Constants standing alone (π, e, i) still need a value.
   let raw
   try {
-    raw = node.evaluate()
+    raw = node.evaluate(ctx.scope)
   } catch (e) {
     throw new ReckoningError(e.message)
   }
@@ -212,6 +261,8 @@ export function arithmetic({ expr }) {
     steps.push({ note: 'A quantity divided by nothing groweth without bound' })
   }
   if (!steps.length) steps.push({ note: 'The quantity standeth already in its simplest form' })
+  // An angle found by an inverse function is given in the chosen measure.
+  if (rootIsInverse && Number.isFinite(value)) result += angle === 'deg' ? '^{\\circ}' : '\\text{ rad}'
 
   return { given, steps, result }
 }
